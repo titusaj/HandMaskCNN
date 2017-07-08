@@ -1,0 +1,21 @@
+%Titus John
+%Leventhal Lab, University of Michigan
+%July 8, 2017
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input
+% This takes a single video and output the groundtrueth 
+
+% Output
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [pawMask] = SingleVideoSegmentation()
+
+    for
+    
+    
+    end
+
+end
