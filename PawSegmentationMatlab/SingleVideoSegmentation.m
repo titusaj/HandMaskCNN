@@ -12,10 +12,21 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [pawMask] = SingleVideoSegmentation()
-    for
+function SingleVideoSegmentation(videoFileName)
     
+    video =  VideoReader(videoFileName);%Read the video into the filspace
+    numFrames= video.Duration* video.FrameRate; %calculate the tolat number of frames in the video
     
+    for i = 1:numFrames %loop through the frams of the video to extract the 
+        rgbImage = read(video, i);
+        [pawMaskLargestBlob,oneBlobCheck]= pawSegmentationFront(rgbImage);
+        
+        figure(1)
+        imshow(rgbImage)
+        
+        figure(2)
+        imshow(pawMaskLargestBlob)
+        
     end
 
 end

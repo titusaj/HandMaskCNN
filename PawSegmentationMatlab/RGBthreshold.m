@@ -18,4 +18,4 @@ b = squeeze(rgb_img(:,:,3));
  g_mask = (g >= thresholds(3) & g <= thresholds(4));
  b_mask = (b >= thresholds(5) & b <= thresholds(6));
 
-mask =  r_mask & (~g_mask);
+mask =  g_mask;

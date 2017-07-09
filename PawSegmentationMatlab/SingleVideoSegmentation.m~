@@ -3,17 +3,20 @@
 %July 8, 2017
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input
-% This takes a single video and output the groundtrueth 
+% Video file for a given view of the mask
 
 % Output
-
+% This takes a single video and output the groundtruth paw segmentation
+% This can be done manullay or using computer vision segmentation
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [pawMask] = SingleVideoSegmentation()
-
-    for
+function [pawMask] = SingleVideoSegmentation(videoFileName)
+    
+    video =  VideoReader)%Read the video into the filspace
+    
+    for i = 1: %loop through the frams of the video to extract the 
     
     
     end
