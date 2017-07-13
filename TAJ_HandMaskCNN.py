@@ -28,6 +28,7 @@ K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 img_rows = 256
 img_cols = 256
+img_channels = 3
 
 smooth = 1.
 
@@ -44,7 +45,7 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    inputs = Input((img_rows, img_cols, 3))
+    inputs = Input((img_rows, img_cols, img_channels))
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -89,11 +90,25 @@ def get_unet():
     return model
 
 
-def preprocess(imgs):
-    imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols), dtype=np.uint8)
+def preprocess_color(imgs):
+    print('Preprocessing color imags')
+    print(imgs.shape)
+    imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols, img_channels), dtype=np.uint8)
+    print (imgs_p.shape)
     for i in range(imgs.shape[0]):
-        imgs_p[i] = resize(imgs[i], (img_cols, img_rows), preserve_range=True)
+        imgs_p[i] = resize(imgs[i], (img_rows, img_cols, img_channels), preserve_range=True)
+        print(imgs_p[i].shape)
+    imgs_p = imgs_p[..., np.newaxis]
+    return imgs_p
 
+def preprocess_mask(imgs):
+    print('Preprocessing mask images')
+    print(imgs.shape)
+    imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols), dtype=np.uint8)
+    print (imgs_p.shape)
+    for i in range(imgs.shape[0]):
+        imgs_p[i] = resize(imgs[i], (img_rows, img_cols), preserve_range=True)
+        print(imgs_p[i].shape)
     imgs_p = imgs_p[..., np.newaxis]
     return imgs_p
 
@@ -103,9 +118,11 @@ def train_and_predict():
     print('Loading and preprocessing train data...')
     print('-'*30)
     imgs_train, imgs_mask_train = load_train_data()
+    print(imgs_train.shape)
+    print(imgs_mask_train.shape)
 
-    imgs_train = preprocess(imgs_train)
-    imgs_mask_train = preprocess(imgs_mask_train)
+    imgs_train = preprocess_color(imgs_train)
+    imgs_mask_train = preprocess_color(imgs_mask_train)
 
     imgs_train = imgs_train.astype('float32')
     mean = np.mean(imgs_train)  # mean for data centering

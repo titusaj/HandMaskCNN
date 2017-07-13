@@ -17,7 +17,7 @@ import numpy as np
 
 from skimage.io import imsave, imread
 
-data_path ='/Users/titusjohn/Documents/HandMaskCNN'
+data_path ='/Users/titusjohn/Documents/GitHub/HandMaskCNN'
 
 image_rows = 471
 image_cols = 441
@@ -29,7 +29,7 @@ def create_train_data():
     total = len(images) // 2
 
     imgs = np.ndarray((total, image_rows, image_cols,image_channels), dtype=np.uint8)
-    imgs_mask = np.ndarray((total, image_rows, image_cols), dtype=np.uint8)
+    imgs_mask = np.ndarray((total, image_rows, image_cols, image_channels), dtype=np.uint8)
 
     i = 0
     print('-'*30)
@@ -41,7 +41,7 @@ def create_train_data():
         image_mask_name = image_name.split('.')[0] + '_mask.tif'
         img = imread(os.path.join(train_data_path, image_name))
         print(img.shape)
-        img_mask = imread(os.path.join(train_data_path, image_mask_name), as_grey=True)
+        img_mask = imread(os.path.join(train_data_path, image_mask_name))
 
         img = np.array([img])
         img_mask = np.array([img_mask])
