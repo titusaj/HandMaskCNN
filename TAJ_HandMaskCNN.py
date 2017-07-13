@@ -26,8 +26,8 @@ from TAJ_DataImport import load_train_data, load_test_data
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-img_rows = 96
-img_cols = 96
+img_rows = 256
+img_cols = 256
 
 smooth = 1.
 
@@ -44,7 +44,7 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    inputs = Input((img_rows, img_cols, 1))
+    inputs = Input((img_rows, img_cols, 3))
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
