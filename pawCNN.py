@@ -9,6 +9,17 @@
 #Output
 
 #------------------------------
-#This is an image classifier trained utilizing for segmentation classification
+# This is an image classifier trained utilizing for segmentation classification
+# Feeding a color image into the network for training and classification
 
-#Have to figure out how to feed color image into net
+from __future__ import print_function
+
+import os
+from skimage.transform import resize
+from skimage.io import imsave
+import numpy as np
+from keras.models import Model
+from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint
+from keras import backend as K #this sets the model to use tensorflow as the backend
