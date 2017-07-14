@@ -16,8 +16,12 @@ import os
 from skimage.transform import resize
 from skimage.io import imsave
 import numpy as np
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
+
+from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
+
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
@@ -45,13 +49,40 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    inputs = Input((img_rows, img_cols, 3,1))
+    inputs = Input((img_rows, img_cols, 3))
     print('-'*30)
     print('Input Shape')
-    print(inputs.shape)
+    print(inputs)
     print('-'*30)
 
+    '''
+    #Model architecture definition
+    model = Sequential()
 
+    model.add(Convolution2D(32, 3, 3, input_shape=(img_rows, img_cols,3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Convolution2D(32, 3,3))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Convolution2D(64, 3, 3))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(64))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1))
+    model.add(Activation('sigmoid'))
+
+    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['mae', 'acc'])
+    return model
+    '''
+
+ #Comennting out this current model
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -92,8 +123,9 @@ def get_unet():
     model = Model(inputs=[inputs], outputs=[conv10])
 
     model.compile(optimizer=Adam(lr=1e-5), loss=dice_coef_loss, metrics=[dice_coef])
-
     return model
+
+
 
 
 def preprocess_color(imgs):
@@ -104,7 +136,7 @@ def preprocess_color(imgs):
     for i in range(imgs.shape[0]):
         imgs_p[i] = resize(imgs[i], (img_rows, img_cols, img_channels), preserve_range=True)
         print(imgs_p[i].shape)
-    imgs_p = imgs_p[..., np.newaxis]
+    #imgs_p = imgs_p[..., np.newaxis] #not sure what this is doing no new axis
     return imgs_p
 
 def preprocess_mask(imgs):
@@ -115,6 +147,7 @@ def preprocess_mask(imgs):
     for i in range(imgs.shape[0]):
         imgs_p[i] = resize(imgs[i], (img_rows, img_cols), preserve_range=True)
         print(imgs_p[i].shape)
+
     imgs_p = imgs_p[..., np.newaxis]
     return imgs_p
 
@@ -129,6 +162,7 @@ def train_and_predict():
 
     imgs_train = preprocess_color(imgs_train)
     imgs_mask_train = preprocess_color(imgs_mask_train)
+
 
     imgs_train = imgs_train.astype('float32')
     mean = np.mean(imgs_train)  # mean for data centering
