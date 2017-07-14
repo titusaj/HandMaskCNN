@@ -45,7 +45,13 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    inputs = Input((img_rows, img_cols, img_channels))
+    inputs = Input((img_rows, img_cols, 3,1))
+    print('-'*30)
+    print('Input Shape')
+    print(inputs.shape)
+    print('-'*30)
+
+
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -118,8 +124,8 @@ def train_and_predict():
     print('Loading and preprocessing train data...')
     print('-'*30)
     imgs_train, imgs_mask_train = load_train_data()
-    print(imgs_train.shape)
-    print(imgs_mask_train.shape)
+
+
 
     imgs_train = preprocess_color(imgs_train)
     imgs_mask_train = preprocess_color(imgs_mask_train)
@@ -143,6 +149,14 @@ def train_and_predict():
     print('-'*30)
     print('Fitting model...')
     print('-'*30)
+
+    print('-'*30)
+    print('image train and mask shape...')
+    print(imgs_train.shape)
+    print(imgs_mask_train.shape)
+    print('-'*30)
+
+
     model.fit(imgs_train, imgs_mask_train, batch_size=32, nb_epoch=20, verbose=1, shuffle=True,
               validation_split=0.2,
               callbacks=[model_checkpoint])

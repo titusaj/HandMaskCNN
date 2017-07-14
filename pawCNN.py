@@ -34,7 +34,7 @@ K.set_image_data_format('channels_last')
 #i mage in the training set
 
 img_row = 96
-img_cols - 96
+img_cols = 96
 
 #smooth  for dice
 smooth = 1.
@@ -50,7 +50,7 @@ def dice_coef(y_true, y_pred):
 def dice_coef_loss(y_true, y_pred):
     return -dice_coef(y_true, y_pred)
 
-#Setup the neural network
+#Setup the neural network model
 def get_unet()
-    inputs = Input(shape=(3, 256, 256))#this sets up a color image to be read
-    conv1 = Conv2D(32, (3,3), activation='relu', padding='same')(inputs)
+    input_image = Input(shape=(3, 256, 256))#this sets up a color image to be read
+    conv1 = Conv2D(32, (3,3), activation='relu', padding='same')(input_image)

@@ -12,9 +12,9 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function SingleVideoSegmentation(videoFileName)
+function SingleVideoSegmentation(video)
     
-    video =  VideoReader(videoFileName);%Read the video into the filspace
+    %video =  VideoReader(videoFileName);%Read the video into the filspace
     numFrames= video.Duration* video.FrameRate; %calculate the tolat number of frames in the video
     
     for i = 1:5%numFrames %loop through the frams of the video to extract the
@@ -34,14 +34,14 @@ function SingleVideoSegmentation(videoFileName)
         pawMaskLargestBlob = repmat(pawMaskLargestBlob,[1,1,3]);%Using this to create image with 3 channels for cnn
         
         %filename for rgb image
-         rgbFilename = strcat('1_',num2str(i),'.tif');
+         rgbFilename = strcat(num2str(i),'.tif');
          imwrite(rgbImage,rgbFilename); 
         
        
         
 %       %filename for mask of paw
-         maskFilename = strcat('1_',num2str(i),'_mask.tif');
-         imwrite(pawMaskLargestBlob,maskFilename); 
+%          maskFilename = strcat('1_',num2str(i),'_mask.tif');
+%          imwrite(pawMaskLargestBlob,maskFilename); 
         
         
         
