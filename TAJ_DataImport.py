@@ -40,7 +40,6 @@ def create_train_data():
             continue
         image_mask_name = image_name.split('.')[0] + '_mask.tif'
         img = imread(os.path.join(train_data_path, image_name))
-        print(img.shape)
         img_mask = imread(os.path.join(train_data_path, image_mask_name), as_grey=True)
 
         img = np.array([img])

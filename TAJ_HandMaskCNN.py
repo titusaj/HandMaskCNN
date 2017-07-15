@@ -55,36 +55,15 @@ def get_unet():
     print(inputs)
     print('-'*30)
 
-    '''
-    #Model architecture definition
-    model = Sequential()
 
-    model.add(Convolution2D(32, 3, 3, input_shape=(img_rows, img_cols,3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Convolution2D(32, 3,3))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Convolution2D(64, 3, 3))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
-
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['mae', 'acc'])
-    return model
-    '''
 
  #Comennting out this current model
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
+    print('-'*30)
+    print('Conv 1 Shape')
+    print(conv1.shape)
+    print('-'*30)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 
     conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool1)
@@ -130,23 +109,23 @@ def get_unet():
 
 def preprocess_color(imgs):
     print('Preprocessing color imags')
-    print(imgs.shape)
+    #print(imgs.shape)
     imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols, img_channels), dtype=np.uint8)
-    print (imgs_p.shape)
+    #print (imgs_p.shape)
     for i in range(imgs.shape[0]):
         imgs_p[i] = resize(imgs[i], (img_rows, img_cols, img_channels), preserve_range=True)
-        print(imgs_p[i].shape)
+    #    print(imgs_p[i].shape)
     #imgs_p = imgs_p[..., np.newaxis] #not sure what this is doing no new axis
     return imgs_p
 
 def preprocess_mask(imgs):
     print('Preprocessing mask images')
-    print(imgs.shape)
+    #print(imgs.shape)
     imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols), dtype=np.uint8)
     print (imgs_p.shape)
     for i in range(imgs.shape[0]):
         imgs_p[i] = resize(imgs[i], (img_rows, img_cols), preserve_range=True)
-        print(imgs_p[i].shape)
+    #    print(imgs_p[i].shape)
 
     imgs_p = imgs_p[..., np.newaxis]
     return imgs_p
@@ -183,15 +162,15 @@ def train_and_predict():
     print('-'*30)
     print('Fitting model...')
     print('-'*30)
-
+    '''
     print('-'*30)
     print('image train and mask shape...')
     print(imgs_train.shape)
     print(imgs_mask_train.shape)
     print('-'*30)
+    '''
 
-
-    model.fit(imgs_train, imgs_mask_train, batch_size=32, nb_epoch=20, verbose=1, shuffle=True,
+    model.fit(imgs_train, imgs_mask_train, batch_size=64, nb_epoch=20, verbose=1, shuffle=True,
               validation_split=0.2,
               callbacks=[model_checkpoint])
 
