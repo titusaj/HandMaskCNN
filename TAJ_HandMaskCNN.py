@@ -30,8 +30,8 @@ from TAJ_DataImport import load_train_data, load_test_data
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-img_rows = 256
-img_cols = 256
+img_rows = 96
+img_cols = 96
 img_channels = 3
 
 smooth = 1.
@@ -48,8 +48,10 @@ def dice_coef_loss(y_true, y_pred):
     return -dice_coef(y_true, y_pred)
 
 
+
+
 def get_unet():
-    inputs = Input((img_rows, img_cols, 3))
+    inputs = Input((3,img_rows, img_cols))
     print('-'*30)
     print('Input Shape')
     print(inputs)
