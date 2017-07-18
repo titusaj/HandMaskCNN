@@ -1,56 +1,115 @@
-# Titus John
-# 6-27-2017
-# Leventhal Lab, University of Michigan
-#-----------------------------
-#Input
-#Input images - these are the raw color images
-#Labled images - these are the segmented ground truth images
+'''This script goes along the blog post
+"Building powerful image classification models using very little data"
+from blog.keras.io.
+It uses data that can be downloaded at:
+https://www.kaggle.com/c/dogs-vs-cats/data
+In our setup, we:
+- created a data/ folder
+- created train/ and validation/ subfolders inside data/
+- created cats/ and dogs/ subfolders inside train/ and validation/
+- put the cat pictures index 0-999 in data/train/cats
+- put the cat pictures index 1000-1400 in data/validation/cats
+- put the dogs pictures index 12500-13499 in data/train/dogs
+- put the dog pictures index 13500-13900 in data/validation/dogs
+So that we have 1000 training examples for each class, and 400 validation examples for each class.
+In summary, this is our directory structure:
+```
+data/
+    train/
+        dogs/
+            dog001.jpg
+            dog002.jpg
+            ...
+        cats/
+            cat001.jpg
+            cat002.jpg
+            ...
+    validation/
+        dogs/
+            dog001.jpg
+            dog002.jpg
+            ...
+        cats/
+            cat001.jpg
+            cat002.jpg
+            ...
+```
+'''
 
-#Output
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Activation, Dropout, Flatten, Dense
+from keras import backend as K
 
-#------------------------------
-# This is an image classifier trained utilizing for segmentation classification
-# Feeding a color image into the network for training and classification
 
-from __future__ import print_function
+# dimensions of our images.
+img_width, img_height = 150, 150
 
-import os
-from skimage.transform import resize
-from skimage.io import imsave
-import numpy as np
-from keras.models import Model
-from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint
-from keras import backend as K #this sets the model to use tensorflow as the backend
+train_data_dir = 'data/train'
+validation_data_dir = 'data/validation'
+nb_train_samples = 2000
+nb_validation_samples = 800
+epochs = 50
+batch_size = 16
 
-from paw_DataImport import load_train_data, load_test_data #this imports the test and training images
+if K.image_data_format() == 'channels_first':
+    input_shape = (3, img_width, img_height)
+else:
+    input_shape = (img_width, img_height, 3)
 
-#TF dimension ordering se in this code
-K.set_image_data_format('channels_last')
+model = Sequential()
+model.add(Conv2D(32, (3, 3), input_shape=input_shape))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-# Image resizing: Accodring to GitHub forum the image thats is fed into the CNN HandMaskCNN
-# has to have dimmesion that are divisible by 16: going to intially try large resized i
-#i mage in the training set
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-img_row = 96
-img_cols = 96
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-#smooth  for dice
-smooth = 1.
+model.add(Flatten())
+model.add(Dense(64))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(1))
+model.add(Activation('sigmoid'))
 
-#the dice cefficent calculation
-def dice_coef(y_true, y_pred):
-    y_true_f = K.flatten(y_true) #flatten the tensor
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    return(2. * intersection +smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+model.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
 
-# loass function of the dice coefficent
-def dice_coef_loss(y_true, y_pred):
-    return -dice_coef(y_true, y_pred)
+# this is the augmentation configuration we will use for training
+train_datagen = ImageDataGenerator(
+    rescale=1. / 255,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True)
 
-#Setup the neural network model
-def get_unet()
-    input_image = Input(shape=(3, 256, 256))#this sets up a color image to be read
-    conv1 = Conv2D(32, (3,3), activation='relu', padding='same')(input_image)
+# this is the augmentation configuration we will use for testing:
+# only rescaling
+test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_data_dir,
+    target_size=(img_width, img_height),
+    batch_size=batch_size,
+    class_mode='binary')
+
+validation_generator = test_datagen.flow_from_directory(
+    validation_data_dir,
+    target_size=(img_width, img_height),
+    batch_size=batch_size,
+    class_mode='binary')
+
+model.fit_generator(
+    train_generator,
+    steps_per_epoch=nb_train_samples // batch_size,
+    epochs=epochs,
+    validation_data=validation_generator,
+    validation_steps=nb_validation_samples // batch_size)
+
+model.save_weights('first_try.h5')

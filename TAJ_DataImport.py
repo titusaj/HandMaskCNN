@@ -17,7 +17,7 @@ import numpy as np
 
 from skimage.io import imsave, imread
 
-data_path ='/Users/titusjohn/Documents/HandMaskCNN'
+data_path ='/Users/titusjohn/Documents/GitHub/HandMaskCNN'
 
 image_rows = 471
 image_cols = 441

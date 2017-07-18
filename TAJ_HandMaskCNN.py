@@ -51,7 +51,7 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    inputs = Input((3,img_rows, img_cols))
+    inputs = Input((img_rows, img_cols,3))
     print('-'*30)
     print('Input Shape')
     print(inputs)
@@ -60,46 +60,46 @@ def get_unet():
 
 
  #Comennting out this current model
-    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
-    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(inputs)
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv1)
     print('-'*30)
     print('Conv 1 Shape')
     print(conv1.shape)
     print('-'*30)
-    pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+    pool1 = MaxPooling2D(pool_size=(2, 2) , data_format = 'channels_last')(conv1)
 
-    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool1)
-    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv2)
-    pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool1)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv2)
+    pool2 = MaxPooling2D(pool_size=(2, 2), data_format = 'channels_last')(conv2)
 
-    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool2)
-    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv3)
-    pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool2)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv3)
+    pool3 = MaxPooling2D(pool_size=(2, 2),  data_format = 'channels_last')(conv3)
 
-    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool3)
-    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv4)
-    pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool3)
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2), data_format = 'channels_last')(conv4)
 
-    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool4)
-    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv5)
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool4)
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv5)
 
     up6 = concatenate([Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(conv5), conv4], axis=3)
-    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same')(up6)
-    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv6)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(up6)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv6)
 
     up7 = concatenate([Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(conv6), conv3], axis=3)
-    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same')(up7)
-    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv7)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(up7)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv7)
 
     up8 = concatenate([Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(conv7), conv2], axis=3)
-    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same')(up8)
-    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv8)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(up8)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv8)
 
     up9 = concatenate([Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same')(conv8), conv1], axis=3)
-    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same')(up9)
-    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv9)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(up9)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv9)
 
-    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid', data_format="channels_last")(conv9)
 
     model = Model(inputs=[inputs], outputs=[conv10])
 
@@ -164,15 +164,16 @@ def train_and_predict():
     print('-'*30)
     print('Fitting model...')
     print('-'*30)
-    '''
+
+
     print('-'*30)
     print('image train and mask shape...')
     print(imgs_train.shape)
     print(imgs_mask_train.shape)
     print('-'*30)
-    '''
 
-    model.fit(imgs_train, imgs_mask_train, batch_size=64, nb_epoch=20, verbose=1, shuffle=True,
+
+    model.fit(imgs_train, imgs_mask_train, batch_size=8, nb_epoch=20, verbose=1, shuffle=True,
               validation_split=0.2,
               callbacks=[model_checkpoint])
 
