@@ -34,13 +34,13 @@ function SingleVideoSegmentation(video)
         pawMaskLargestBlob = repmat(pawMaskLargestBlob,[1,1,3]);%Using this to create image with 3 channels for cnn
         
         %filename for rgb image
-%          rgbFilename = strcat('images00',num2str(i),'.jpg');
-%          imwrite(rgbImage,rgbFilename); 
-%         
+         rgbFilename = strcat('1_',num2str(i),'.jpg');
+         imwrite(rgbImage,rgbFilename); 
+        
        
         
 %       %filename for mask of paw
-       maskFilename = strcat('masks00',num2str(i),'.jpg');
+       maskFilename = strcat('1_',num2str(i),'_mask.jpg');
         imwrite(pawMaskLargestBlob,maskFilename); 
         
         
