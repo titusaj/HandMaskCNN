@@ -11,15 +11,24 @@
 #------------------------------
 #This scripts is used to import the data into the workspace for data preprocessing
 from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras import backend as K
+from skimage.transform import resize
+from skimage.io import imsave
 import numpy as np
+from keras.models import Model
+from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint
+from keras import backend as K
+
+K.set_image_data_format('channels_last')  # TF dimension ordering in this code
+
 
 #import the image nparrays
 imgs_train = np.load('imgs_train.npy')
 imgs_mask_train = np.load('imgs_mask_train.npy')
+
+print(imgs_train.shape)
+print(imgs_mask_train.shape)
 
 
 # dimensions of our images.
@@ -32,34 +41,64 @@ nb_validation_samples = 800
 epochs = 50
 batch_size = 16
 
-if K.image_data_format() == 'channels_first':
-    input_shape = (3, img_width, img_height)
-else:
-    input_shape = (img_width, img_height, 3)
+smooth = 1.
 
-model = Sequential()
-model.add(Conv2D(32, (3, 3), input_shape=input_shape))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(32, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+def dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Flatten())
-model.add(Dense(64))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
+def dice_coef_loss(y_true, y_pred):
+    return -dice_coef(y_true, y_pred)
 
-model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+
+def get_unet():
+    inputs = Input((img_width, img_height, 3))
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
+    pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+    '''
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool1)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv2)
+    pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool2)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv3)
+    pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool3)
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool4)
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv5)
+
+    up6 = concatenate([Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(conv5), conv4], axis=3)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(conv6), conv3], axis=3)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(conv7), conv2], axis=3)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same')(conv8), conv1], axis=3)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv9)
+    '''
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv1)
+
+    model = Model(inputs=[inputs], outputs=[conv10])
+
+    model.compile(optimizer=Adam(lr=1e-5), loss=dice_coef_loss, metrics=[dice_coef])
+
+    return model
 
 
 # we create two instances with the same arguments
@@ -92,13 +131,13 @@ mask_generator = mask_datagen.flow_from_directory(
 image_datagen.fit(imgs_train , augment=True, seed=seed)
 mask_datagen.fit(imgs_mask_train , augment=True, seed=seed)
 
+model = get_unet()
+print("got here")
+model_checkpoint = ModelCheckpoint('weights.h5', monitor='val_loss', save_best_only=True)
 
-# combine generators into one which yields image and masks
-train_generator = zip(image_generator, mask_generator)
 
-model.fit_generator(
-    train_generator,
-    steps_per_epoch=2000,
-    epochs=50)
+model.fit(imgs_train, imgs_mask_train, batch_size=32, nb_epoch=20, verbose=1, shuffle=True,
+          validation_split=0.2,
+          callbacks=[model_checkpoint])
 
 model.save_weights('first_try.h5')
