@@ -30,8 +30,8 @@ from TAJ_DataImport import load_train_data, load_test_data
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-img_rows = 96
-img_cols = 96
+img_rows = 256
+img_cols = 256
 img_channels = 3
 
 smooth = 1.
