@@ -15,6 +15,7 @@ from skimage.transform import resize
 from skimage.io import imsave
 import numpy as np
 from keras.models import Model, Sequential
+from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, Convolution2D
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
@@ -32,7 +33,7 @@ print(imgs_mask_train.shape)
 
 
 # dimensions of our images.
-img_width, img_height = 471, 441
+img_rows, img_cols = 512, 512
 
 train_data_dir = 'data/train'
 validation_data_dir = 'data/validation'
@@ -56,29 +57,59 @@ def dice_coef_loss(y_true, y_pred):
 
 
 def get_unet():
-    model = Sequential()
+    inputs = Input((img_rows, img_cols,3))
+    print('-'*30)
+    print('Input Shape')
+    print(inputs)
+    print('-'*30)
 
-    model.add(Convolution2D(32, 3, 3, input_shape=(img_width, img_height,3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(32, 3,3))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Convolution2D(64, 3, 3))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    #Comennting out this current model
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(inputs)
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv1)
+    print('-'*30)
+    print('Conv 1 Shape')
+    print(conv1.shape)
+    print('-'*30)
+    pool1 = MaxPooling2D(pool_size=(2, 2) , data_format = 'channels_last')(conv1)
 
-    model.add(Flatten())
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool1)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv2)
+    pool2 = MaxPooling2D(pool_size=(2, 2), data_format = 'channels_last')(conv2)
 
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['mae', 'acc'])
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool2)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv3)
+    pool3 = MaxPooling2D(pool_size=(2, 2),  data_format = 'channels_last')(conv3)
 
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool3)
+    conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2), data_format = 'channels_last')(conv4)
+
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', data_format="channels_last")(pool4)
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv5)
+
+    up6 = concatenate([Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(conv5), conv4], axis=3)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(up6)
+    conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv6)
+
+    up7 = concatenate([Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(conv6), conv3], axis=3)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(up7)
+    conv7 = Conv2D(128, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv7)
+
+    up8 = concatenate([Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(conv7), conv2], axis=3)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(up8)
+    conv8 = Conv2D(64, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv8)
+
+    up9 = concatenate([Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same')(conv8), conv1], axis=3)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(up9)
+    conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', data_format="channels_last")(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid', data_format="channels_last")(conv9)
+
+    model = Model(inputs=[inputs], outputs=[conv10])
+
+    model.compile(optimizer=Adam(lr=1e-5), loss=dice_coef_loss, metrics=[dice_coef])
     return model
 
 

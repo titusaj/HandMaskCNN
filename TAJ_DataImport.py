@@ -19,8 +19,8 @@ from skimage.io import imsave, imread
 
 data_path ='/Users/titusjohn/Documents/GitHub/HandMaskCNN'
 
-image_rows = 471
-image_cols = 441
+image_rows = 512
+image_cols = 512
 image_channels = 3
 
 def create_train_data():

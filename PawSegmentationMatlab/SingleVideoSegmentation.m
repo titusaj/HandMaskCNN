@@ -35,13 +35,15 @@ function SingleVideoSegmentation(video)
         
         %filename for rgb image
          rgbFilename = strcat('1_',num2str(i),'.jpg');
+         rgbImage= imresize(rgbImage, [512, 512]);
          imwrite(rgbImage,rgbFilename); 
         
        
         
 %       %filename for mask of paw
-       maskFilename = strcat('1_',num2str(i),'_mask.jpg');
-        imwrite(pawMaskLargestBlob,maskFilename); 
+            maskFilename = strcat('1_',num2str(i),'_mask.jpg');
+            pawMaskLargestBlob = imresize(pawMaskLargestBlob, [512, 512]);
+            imwrite(pawMaskLargestBlob,maskFilename); 
         
         
         
