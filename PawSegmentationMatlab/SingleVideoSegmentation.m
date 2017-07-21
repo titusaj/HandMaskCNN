@@ -31,20 +31,21 @@ function SingleVideoSegmentation(video)
         %Convert the images to uint8
         rgbImage = im2uint8(decorrstretch(rgbImage));
         pawMaskLargestBlob = im2uint8(pawMaskLargestBlob);
-        pawMaskLargestBlob = repmat(pawMaskLargestBlob,[1,1,3]);%Using this to create image with 3 channels for cnn
+       % pawMaskLargestBlob = repmat(pawMaskLargestBlob,[1,1,3]);%Using this to create image with 3 channels for cnn
         
         %filename for rgb image
-         rgbFilename = strcat('1_',num2str(i),'.jpg');
+         rgbFilename = strcat(num2str(i),'.tif');
+         rgbImage = rgb2gray(rgbImage);
          rgbImage= imresize(rgbImage, [512, 512]);
          imwrite(rgbImage,rgbFilename); 
         
        
         
 %       %filename for mask of paw
-            maskFilename = strcat('1_',num2str(i),'_mask.jpg');
-            pawMaskLargestBlob = imresize(pawMaskLargestBlob, [512, 512]);
-            imwrite(pawMaskLargestBlob,maskFilename); 
-        
+%             maskFilename = strcat('1_',num2str(i),'_mask.tif');
+%             pawMaskLargestBlob = imresize(pawMaskLargestBlob, [512, 512]);
+%             imwrite(pawMaskLargestBlob,maskFilename); 
+%         
         
         
     end

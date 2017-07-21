@@ -21,7 +21,7 @@ data_path ='/Users/titusjohn/Documents/GitHub/HandMaskCNN'
 
 image_rows = 512
 image_cols = 512
-image_channels = 3
+image_channels = 1
 
 def create_train_data():
     train_data_path = os.path.join(data_path, 'train')
@@ -38,7 +38,7 @@ def create_train_data():
     for image_name in images:
         if 'mask' in image_name:
             continue
-        image_mask_name = image_name.split('.')[0] + '_mask.jpg'
+        image_mask_name = image_name.split('.')[0] + '_mask.tif'
         img = imread(os.path.join(train_data_path, image_name))
         img_mask = imread(os.path.join(train_data_path, image_mask_name))
 
